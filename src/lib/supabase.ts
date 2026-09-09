@@ -110,8 +110,8 @@ function createResilientFetch(maxRetries = 3, timeoutMs = 10000): typeof fetch {
 
         const duration = Math.round(performance.now() - startTime);
 
-        // Only retry on 5xx server errors or 429 rate limits, not 4xx client errors
-        if (!response.ok && (response.status >= 500 || response.status === 429)) {
+        // Only retry on 5xx server errors or transient 429 rate limits (exclude auth endpoints which have hourly limits)
+        if (!response.ok && (response.status >= 500 || (response.status === 429 && !urlString.includes('/auth/')))) {
           if (attempt < maxRetries) {
             attempt++;
             const backoff = Math.min(1000 * Math.pow(2, attempt), 4000);

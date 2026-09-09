@@ -325,6 +325,16 @@ export function useSupabase(): UseSupabaseReturn {
     };
   }, []);
 
+  // Subscribe to auth state updates
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthenticatedUser(session?.user?.email || 'Anonymous (Public)');
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Initial connection on mount
   useEffect(() => {
     connect();

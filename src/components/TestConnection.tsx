@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSupabase } from '../hooks/useSupabase';
 import { SupabaseStatus } from './SupabaseStatus';
 import { CrudDemo } from './CrudDemo';
+import { AuthCard } from './AuthCard';
 import {
   Server,
   Shield,
@@ -46,7 +47,7 @@ export const TestConnection: React.FC = () => {
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [logFilter, setLogFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'overview' | 'logs' | 'env'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'logs' | 'env' | 'auth'>('overview');
 
   const copyToClipboard = (text: string, keyName: string) => {
     navigator.clipboard.writeText(text);
@@ -94,6 +95,13 @@ export const TestConnection: React.FC = () => {
               onClick={() => setActiveTab('env')}
             >
               Environment
+            </button>
+            <button
+              id="tab-btn-auth"
+              className={`tab-btn ${activeTab === 'auth' ? 'active' : ''}`}
+              onClick={() => setActiveTab('auth')}
+            >
+              Auth & Identity
             </button>
           </div>
 
@@ -248,14 +256,19 @@ export const TestConnection: React.FC = () => {
             )}
           </section>
 
-          {/* Section 3 & 4: Auth Status & Database Test */}
-          <section className="card auth-db-card" id="authentication-status-section">
+          {/* Section 3: Interactive Auth & Identity Card */}
+          <section className="grid-full">
+            <AuthCard />
+          </section>
+
+          {/* Section 4: Database Test */}
+          <section className="card auth-db-card" id="database-test-section">
             <div className="card-header">
               <div className="header-title">
                 <Shield className="section-icon" />
                 <div>
-                  <h3>Authentication & Gateway</h3>
-                  <p className="subtitle">Session state and API security perimeter</p>
+                  <h3>Database Query Diagnostics</h3>
+                  <p className="subtitle">Real-time query execution & session perimeter</p>
                 </div>
               </div>
             </div>
@@ -454,6 +467,9 @@ export const TestConnection: React.FC = () => {
                 {`# Test connection lifecycle (10 automated checks)
 npm run db:test
 
+# Test authentication lifecycle (8 automated checks)
+npm run test:auth
+
 # Seed 10 users, 20 products, 15 todos
 npm run db:seed
 
@@ -471,6 +487,47 @@ npm run db:migrate`}
               </pre>
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Auth & Identity Dedicated Tab */}
+      {activeTab === 'auth' && (
+        <section className="dashboard-grid">
+          <div className="grid-full">
+            <AuthCard />
+          </div>
+
+          <section className="card env-full-card grid-full">
+            <div className="card-header">
+              <div className="header-title">
+                <Shield className="section-icon text-emerald" />
+                <div>
+                  <h3>Supabase Auth Integration Reference</h3>
+                  <p className="subtitle">Using the native useAuth hook and auth helper functions</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-content">
+              <h4>Available Hook & Functions:</h4>
+              <pre className="code-display font-mono">
+{`import { useAuth } from '@/hooks/useAuth';
+import { authSignUp, authSignIn, authSignOut } from '@/lib/auth';
+
+// Inside any client component:
+const { user, session, isAuthenticated, signIn, signUp, signOut } = useAuth();
+
+// Sign in example:
+await signIn({ email: 'user@example.com', password: 'SecretPassword123!' });
+
+// Sign up example:
+await signUp({ email: 'user@example.com', password: 'SecretPassword123!' });
+
+// Sign out example:
+await signOut();`}
+              </pre>
+            </div>
+          </section>
         </section>
       )}
     </div>

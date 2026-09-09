@@ -13,7 +13,8 @@
     "db:test": "tsx scripts/test-supabase.ts",
     "db:health": "tsx scripts/health.ts",
     "db:ping": "tsx scripts/ping.ts",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.ts",
+    "test:auth": "tsx scripts/test-auth.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
