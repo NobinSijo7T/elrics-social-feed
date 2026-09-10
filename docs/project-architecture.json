@@ -1,0 +1,157 @@
+{
+  "project": {
+    "name": "Elrics",
+    "description": "A full-stack Mission Control dashboard that combines a Next.js 16 frontend, Supabase platform services, and a Django REST Framework sidecar API.",
+    "architecture_style": "Hybrid full-stack architecture with a shared PostgreSQL database"
+  },
+  "presentation_summary": {
+    "django_integration": "I integrated Django REST Framework as a sidecar backend service. It connects directly to the same Supabase PostgreSQL database as the Next.js application and exposes standard REST CRUD endpoints for users, products, and todos.",
+    "why_django_is_useful": [
+      "It provides a structured, framework-based REST API for consumers that prefer HTTP endpoints over direct Supabase client access.",
+      "DRF ModelViewSets, serializers, and router-based URLs make CRUD features consistent and easy to extend with validation, permissions, business rules, reporting, or third-party integrations.",
+      "It separates future server-side business logic from the frontend while still allowing Supabase to handle authentication, realtime updates, and database operations.",
+      "Django models are unmanaged, so Supabase remains the only owner of database schema changes and there is no migration conflict between the two backends.",
+      "CORS configuration lets the Next.js frontend call the Django API during local development."
+    ],
+    "important_design_note": "The current Next.js dashboard primarily uses the Supabase client directly for authentication, realtime subscriptions, and todo operations. Django is an additional API layer, ready for API-first clients or server-side workflows; it is not a replacement for Supabase."
+  },
+  "runtime_components": {
+    "frontend": {
+      "technology": "Next.js 16, React 19, TypeScript",
+      "port": 3000,
+      "responsibilities": [
+        "Renders the Mission Control dashboard using the App Router.",
+        "Manages client-side authentication UI and session state.",
+        "Runs todo CRUD, realtime, storage, and diagnostic UI flows through Supabase clients.",
+        "Refreshes Supabase authentication cookies through middleware."
+      ]
+    },
+    "django_api": {
+      "technology": "Django 4.2 and Django REST Framework",
+      "port": 8000,
+      "base_url": "/api/",
+      "responsibilities": [
+        "Exposes browsable and JSON REST endpoints.",
+        "Implements list, retrieve, create, update, and delete operations through DRF ModelViewSets.",
+        "Serializes and validates API payloads for users, products, and todos.",
+        "Adds UUID and created-at values when records are created through Django."
+      ],
+      "endpoints": {
+        "users": "/api/users/",
+        "products": "/api/products/",
+        "todos": "/api/todos/"
+      }
+    },
+    "supabase": {
+      "services": [
+        "PostgreSQL database",
+        "GoTrue authentication",
+        "PostgREST data API",
+        "Realtime WebSocket subscriptions",
+        "Storage"
+      ],
+      "responsibilities": [
+        "Owns the public database schema, SQL migrations, seed data, and row-level-security policies.",
+        "Stores users, products, and todos.",
+        "Provides browser-safe authentication and realtime capabilities to the Next.js application."
+      ]
+    },
+    "automation": {
+      "technology": "TypeScript CLI scripts",
+      "responsibilities": [
+        "Runs database migration, seed, reset, health, connectivity, and authentication checks.",
+        "Provides repeatable operational and test workflows."
+      ]
+    }
+  },
+  "data_flow": [
+    {
+      "flow": "Direct application flow",
+      "path": "Browser -> Next.js dashboard -> Supabase Auth/PostgREST/Realtime -> Supabase PostgreSQL",
+      "use_case": "Interactive authentication, live todo CRUD, realtime updates, storage checks, and telemetry."
+    },
+    {
+      "flow": "REST API flow",
+      "path": "Browser or external client -> Django REST Framework -> Django ORM unmanaged models -> Supabase PostgreSQL",
+      "use_case": "Standard REST integration, backend validation, and future server-side business workflows."
+    },
+    {
+      "flow": "Schema management flow",
+      "path": "SQL files and TypeScript migration scripts -> Supabase PostgreSQL",
+      "use_case": "Creates and evolves database objects outside Django migrations."
+    }
+  ],
+  "database_strategy": {
+    "database": "Supabase PostgreSQL public schema",
+    "source_of_truth": "supabase/schema.sql and supabase/migrations/",
+    "tables": [
+      "users",
+      "products",
+      "todos"
+    ],
+    "django_model_policy": "All Django models use managed = false. Django maps to existing tables but never creates, alters, or drops them.",
+    "security": "Row Level Security is configured in Supabase SQL. Django connects directly to PostgreSQL, so production deployments should add DRF authentication and permission policies before exposing write endpoints publicly."
+  },
+  "repository_structure": {
+    "root": {
+      ".env": "Runtime credentials; excluded from version control.",
+      ".env.example": "Template for required environment variables.",
+      "package.json": "Next.js dependencies and automation commands.",
+      "next.config.ts": "Next.js configuration.",
+      "src/": "Next.js frontend application.",
+      "backend/": "Django REST Framework sidecar API.",
+      "supabase/": "Database schema, seed data, and SQL migrations.",
+      "scripts/": "TypeScript operational, migration, and test scripts.",
+      "frontend/social-feed-platform/": "Standalone static social-feed prototype assets."
+    },
+    "src": {
+      "app/": "App Router layout, page, and global styles.",
+      "components/": "Dashboard, authentication, status, modal, and CRUD UI components.",
+      "hooks/": "Reusable Supabase, profile, and authentication React hooks.",
+      "lib/": "Supabase browser/server clients, environment validation, typed database models, and auth helpers.",
+      "middleware.ts": "Refreshes Supabase user sessions for matching Next.js requests."
+    },
+    "backend": {
+      "manage.py": "Django command entry point.",
+      "requirements.txt": "Python dependencies.",
+      "elrics_api/settings.py": "Database, Django, DRF, and CORS settings.",
+      "elrics_api/urls.py": "Mounts API routes under /api/.",
+      "api/models.py": "Unmanaged Django table mappings.",
+      "api/serializers.py": "DRF serializers for request validation and response formatting.",
+      "api/views.py": "CRUD ModelViewSets and server-side record defaults.",
+      "api/urls.py": "DRF router registrations for users, products, and todos.",
+      "test_api.py": "Live CRUD API test suite."
+    },
+    "supabase": {
+      "schema.sql": "Base PostgreSQL schema, RLS policies, and realtime publication setup.",
+      "seed.sql": "Idempotent sample data.",
+      "migrations/": "Versioned SQL schema changes, including social-feed and comment migrations."
+    },
+    "scripts": {
+      "migrate.ts": "Applies schema changes.",
+      "seed.ts": "Seeds data with rollback support.",
+      "test-supabase.ts": "Database and CRUD validation.",
+      "test-auth.ts": "Authentication lifecycle validation.",
+      "health.ts": "Database health check.",
+      "ping.ts": "Connectivity and latency check.",
+      "reset-db.ts": "Database reset utility."
+    }
+  },
+  "local_development": {
+    "nextjs": "npm run dev",
+    "django": "cd backend; python manage.py runserver 8000",
+    "database_operations": [
+      "npm run db:migrate",
+      "npm run db:seed",
+      "npm run db:health",
+      "npm run db:test"
+    ],
+    "django_api_verification": "cd backend; python test_api.py"
+  },
+  "future_extension_points": [
+    "Add DRF authentication and object-level permission classes tied to Supabase JWT verification.",
+    "Move complex business rules, batch operations, webhooks, and third-party integrations into Django service modules.",
+    "Add API versioning, rate limiting, OpenAPI documentation, and production-specific CORS and allowed-host configuration.",
+    "Have the Next.js frontend call Django endpoints selectively where server-owned rules are required."
+  ]
+}

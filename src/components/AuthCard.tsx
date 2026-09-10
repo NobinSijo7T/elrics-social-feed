@@ -15,9 +15,11 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  UserCheck
+  UserCheck,
+  Pencil
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { EditProfileModal } from './EditProfileModal';
 
 interface AuthCardProps {
   onAuthSuccess?: (email: string) => void;
@@ -44,6 +46,8 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +135,16 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
 
             <div className="profile-details">
               <div className="flex items-center gap-2">
-                <span className="profile-email">{user.email}</span>
+                <span className="profile-email">
+                  {displayName ? (
+                    <>
+                      <span className="profile-display-name">{displayName}</span>
+                      <span className="profile-email-sub">{user.email}</span>
+                    </>
+                  ) : (
+                    user.email
+                  )}
+                </span>
                 <span className="badge badge-verified">
                   <UserCheck size={12} /> {user.role || 'authenticated'}
                 </span>
@@ -159,6 +172,15 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
 
           <div className="auth-actions-bar">
             <button
+              id="btn-edit-profile"
+              className="btn btn-outline"
+              onClick={() => setShowEditProfile(true)}
+              disabled={isSubmitting || isLoading}
+            >
+              <Pencil size={15} />
+              Edit Profile
+            </button>
+            <button
               id="btn-auth-signout"
               className="btn btn-secondary btn-signout"
               onClick={() => signOut()}
@@ -172,6 +194,18 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
               Sign Out Session
             </button>
           </div>
+
+          {/* Edit Profile Modal */}
+          {showEditProfile && user && (
+            <EditProfileModal
+              authUser={user}
+              onClose={() => setShowEditProfile(false)}
+              onSaved={(name) => {
+                setDisplayName(name);
+                setShowEditProfile(false);
+              }}
+            />
+          )}
         </div>
       ) : (
         /* Unauthenticated State: Forms */

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.likes (
     PRIMARY KEY (post_id, user_id)
 );
 
+
 CREATE INDEX IF NOT EXISTS posts_created_at_idx ON public.posts (created_at DESC);
 CREATE INDEX IF NOT EXISTS posts_user_id_idx ON public.posts (user_id, created_at DESC);
 
