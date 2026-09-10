@@ -135,6 +135,46 @@
       "health.ts": "Database health check.",
       "ping.ts": "Connectivity and latency check.",
       "reset-db.ts": "Database reset utility."
+    },
+    "frontend_social_feed_platform": {
+      "purpose": "A standalone static social-feed frontend prototype. It uses plain HTML, CSS, and JavaScript and communicates with Supabase through its JavaScript service layer.",
+      "pages": {
+        "login.html": "Sign-in page.",
+        "register.html": "New-user registration page.",
+        "feed.html": "Main social-feed page for viewing and interacting with posts.",
+        "profile.html": "User profile page.",
+        "README.md": "Setup and usage notes for the standalone frontend."
+      },
+      "css": {
+        "styles.css": "Global visual styles, typography, colours, and base rules.",
+        "layout.css": "Page grid, navigation, content-area, and responsive layout structure.",
+        "components.css": "Reusable UI styles for cards, buttons, forms, modals, toasts, and feed elements.",
+        "responsive.css": "Viewport-specific layout and component adjustments."
+      },
+      "javascript": {
+        "app.js": "Shared application bootstrap and common client-side initialization.",
+        "pages": {
+          "login.js": "Login-page behavior and authentication submission flow.",
+          "register.js": "Registration-page behavior and account creation flow.",
+          "feed.js": "Feed loading, post interactions, and feed-page behavior.",
+          "profile.js": "Profile loading, editing, and profile-page behavior."
+        },
+        "services": {
+          "supabase-config.js": "Supabase client configuration and connection setup.",
+          "api.js": "Data-access functions used by pages to communicate with Supabase services."
+        },
+        "components": {
+          "comments.js": "Reusable comment display and interaction behavior.",
+          "loader.js": "Loading-state UI behavior.",
+          "modal.js": "Reusable modal dialog controls.",
+          "toast.js": "Transient success, warning, and error notifications."
+        },
+        "utils": {
+          "validation.js": "Reusable client-side form and input validation.",
+          "helpers.js": "Shared utility functions used across pages and components."
+        }
+      },
+      "frontend_flow": "HTML page -> page-specific JavaScript -> shared API service -> Supabase. Shared components and utilities support consistent UI behavior across each page."
     }
   },
   "local_development": {
