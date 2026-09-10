@@ -1,6 +1,7 @@
 /**
  * Direct Migration Script for Supabase PostgreSQL
- * Connects directly using DATABASE_URL or SUPABASE_DB_PASSWORD and executes supabase/schema.sql.
+ * Connects directly using DATABASE_URL or SUPABASE_DB_PASSWORD and executes the
+ * base schema followed by every SQL migration in chronological order.
  */
 
 import 'dotenv/config';
@@ -18,8 +19,12 @@ async function runMigrations() {
     process.exit(1);
   }
 
-  const sql = fs.readFileSync(schemaPath, 'utf-8');
-  console.log(`Loaded schema file (${sql.length} characters)`);
+  const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
+  const migrationsDir = path.resolve(process.cwd(), 'supabase/migrations');
+  const migrationFiles = fs.existsSync(migrationsDir)
+    ? fs.readdirSync(migrationsDir).filter(file => file.endsWith('.sql')).sort()
+    : [];
+  console.log(`Loaded base schema and ${migrationFiles.length} migration(s)`);
 
   const connectionString = 
     process.env.DATABASE_URL || 
@@ -46,13 +51,18 @@ async function runMigrations() {
     console.log('Connected to PostgreSQL successfully!');
     console.log('Executing database schema and RLS policies...');
 
-    await client.query(sql);
+    await client.query(schemaSql);
+    for (const migrationFile of migrationFiles) {
+      console.log(`Applying ${migrationFile}...`);
+      await client.query(fs.readFileSync(path.join(migrationsDir, migrationFile), 'utf-8'));
+    }
 
     console.log('✨ All migrations and RLS policies applied successfully!\n');
     console.log('Created tables:');
     console.log('  - users (with RLS)');
     console.log('  - products (with RLS)');
     console.log('  - todos (with RLS)');
+    console.log('  - profiles, posts, likes (with RLS)');
   } catch (err: unknown) {
     console.error('Direct migration error:', (err as Error).message);
     console.log('\n💡 Alternatively, paste supabase/schema.sql in the Supabase SQL Editor:');
